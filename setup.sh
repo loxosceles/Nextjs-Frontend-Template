@@ -48,9 +48,15 @@ prompt() {
 opt_mount() {
   local label="$1" flag_var="$2" path_var="$3" default_path="${4:-}"
   [[ "${SKIP_OPTIONAL_MOUNTS:-}" == "true" ]] && return
+  # If path already known from host config, auto-enable without prompting
+  if [[ -n "$default_path" ]]; then
+    printf -v "$path_var" '%s' "$default_path"
+    printf -v "$flag_var" 'true'
+    return
+  fi
   read -rp "$label? [y/N]: " ans </dev/tty
   if [[ "${ans,,}" == "y" ]]; then
-    prompt "$path_var" "  Path" "$default_path"
+    prompt "$path_var" "  Path" ""
     printf -v "$flag_var" 'true'
   fi
 }
