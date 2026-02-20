@@ -199,11 +199,9 @@ git init
 [[ -n "${GIT_EMAIL:-}" ]] && git config user.email "$GIT_EMAIL"
 
 # ─── Offer to save host config ────────────────────────────────────────────────
-if [[ ! -f "$HOST_CONFIG" ]]; then
-  read -rp "Save settings to $HOST_CONFIG for future projects? [y/N]: " ans </dev/tty
-  if [[ "${ans,,}" == "y" ]]; then
-    mkdir -p "$(dirname "$HOST_CONFIG")"
-    cat > "$HOST_CONFIG" <<CFG
+_write_host_config() {
+  mkdir -p "$(dirname "$HOST_CONFIG")"
+  cat > "$HOST_CONFIG" <<CFG
 GITHUB_USERNAME="${GITHUB_USERNAME:-}"
 GIT_NAME="${GIT_NAME:-}"
 GIT_EMAIL="${GIT_EMAIL:-}"
@@ -215,8 +213,15 @@ TMUX_CONFIG_PATH="${TMUX_CONFIG_PATH:-}"
 ZSH_HISTORY_PATH="${ZSH_HISTORY_PATH:-}"
 CODING_STANDARDS_PATH="${CODING_STANDARDS_PATH:-}"
 CFG
-    ok "Saved to $HOST_CONFIG"
-  fi
+  ok "Saved to $HOST_CONFIG"
+}
+
+if [[ -f "$HOST_CONFIG" ]]; then
+  read -rp "Update $HOST_CONFIG with current settings? [Y/n]: " ans </dev/tty
+  [[ "${ans,,}" != "n" ]] && _write_host_config
+else
+  read -rp "Save settings to $HOST_CONFIG for future projects? [y/N]: " ans </dev/tty
+  [[ "${ans,,}" == "y" ]] && _write_host_config
 fi
 
 # ─── Done ────────────────────────────────────────────────────────────────────
