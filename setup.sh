@@ -138,7 +138,11 @@ import json, re
 with open('.devcontainer/devcontainer.json') as f:
     d = json.loads(re.sub(r'//[^\n]*', '', f.read()))
 d['containerEnv']['SSH_CONTEXT'] = '${SSH_CONTEXT:-default}'
+d['containerEnv']['GITHUB_USERNAME'] = '${GITHUB_USERNAME:-}'
+d['containerEnv']['GIT_NAME'] = '${GIT_NAME:-}'
+d['containerEnv']['GIT_EMAIL'] = '${GIT_EMAIL:-}'
 d['mounts'] = json.loads('${MOUNTS}')
+d.pop('runArgs', None)
 with open('.devcontainer/devcontainer.json', 'w') as f:
     json.dump(d, f, indent=2)
 PYEOF
@@ -185,13 +189,6 @@ JSON
 }
 _mcp > .vscode/mcp.json
 _mcp > .amazonq/mcp.json
-
-# ─── .devcontainer/.env ───────────────────────────────────────────────────────
-cat > .devcontainer/.env <<ENV
-GITHUB_USERNAME=${GITHUB_USERNAME:-}
-GIT_NAME=${GIT_NAME:-}
-GIT_EMAIL=${GIT_EMAIL:-}
-ENV
 
 # ─── git init ────────────────────────────────────────────────────────────────
 git init
