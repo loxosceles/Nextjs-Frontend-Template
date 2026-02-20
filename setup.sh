@@ -37,10 +37,10 @@ prompt() {
   local var="$1" label="$2" default="${3:-}"
   [[ -n "${!var:-}" ]] && return
   if [[ -n "$default" ]]; then
-    read -rp "$label [$default]: " val
+    read -rp "$label [$default]: " val </dev/tty
     printf -v "$var" '%s' "${val:-$default}"
   else
-    read -rp "$label: " val
+    read -rp "$label: " val </dev/tty
     printf -v "$var" '%s' "$val"
   fi
 }
@@ -48,7 +48,7 @@ prompt() {
 opt_mount() {
   local label="$1" flag_var="$2" path_var="$3" default_path="${4:-}"
   [[ "${SKIP_OPTIONAL_MOUNTS:-}" == "true" ]] && return
-  read -rp "$label? [y/N]: " ans
+  read -rp "$label? [y/N]: " ans </dev/tty
   if [[ "${ans,,}" == "y" ]]; then
     prompt "$path_var" "  Path" "$default_path"
     printf -v "$flag_var" 'true'
@@ -73,11 +73,11 @@ opt_mount "Mount ZSH history"      MOUNT_HIST ZSH_HISTORY_PATH      "${ZSH_HISTO
 opt_mount "Mount coding standards" MOUNT_STD  CODING_STANDARDS_PATH "${CODING_STANDARDS_PATH:-}"
 
 if [[ "${SKIP_MCP:-}" != "true" ]]; then
-  read -rp "Configure MCP servers? [y/N]: " ans
+  read -rp "Configure MCP servers? [y/N]: " ans </dev/tty
   if [[ "${ans,,}" == "y" ]]; then
-    read -rp "  GitHub MCP token (enter to skip): " GITHUB_MCP_TOKEN
-    read -rp "  Trello API key (enter to skip): "   TRELLO_API_KEY
-    read -rp "  Trello token (enter to skip): "     TRELLO_TOKEN
+    read -rp "  GitHub MCP token (enter to skip): " GITHUB_MCP_TOKEN </dev/tty
+    read -rp "  Trello API key (enter to skip): "   TRELLO_API_KEY </dev/tty
+    read -rp "  Trello token (enter to skip): "     TRELLO_TOKEN </dev/tty
   fi
 fi
 
@@ -193,7 +193,7 @@ git config user.email "$GIT_EMAIL"
 
 # ─── Offer to save host config ────────────────────────────────────────────────
 if [[ ! -f "$HOST_CONFIG" ]]; then
-  read -rp "Save settings to $HOST_CONFIG for future projects? [y/N]: " ans
+  read -rp "Save settings to $HOST_CONFIG for future projects? [y/N]: " ans </dev/tty
   if [[ "${ans,,}" == "y" ]]; then
     mkdir -p "$(dirname "$HOST_CONFIG")"
     cat > "$HOST_CONFIG" <<CFG
