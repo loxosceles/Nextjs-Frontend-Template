@@ -1,0 +1,49 @@
+{
+  "name": "nextjs-frontend-template",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.6.0",
+  "scripts": {
+    "dev": "pnpm --filter=frontend run dev",
+    "build": "pnpm --filter=frontend run build",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml}\"",
+    "test": "pnpm --filter=frontend run test && pnpm --filter=infrastructure run test",
+    "test:infra": "pnpm --filter=infrastructure run test",
+    "test:frontend": "pnpm --filter=frontend run test",
+    "synth": "pnpm --filter=infrastructure run synth",
+    "deploy:dev": "ENVIRONMENT=dev pnpm --filter=infrastructure run deploy",
+    "deploy:prod": "ENVIRONMENT=prod pnpm --filter=infrastructure run deploy",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "**/*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write --end-of-line auto"
+    ],
+    "*.{json,md,yml}": [
+      "prettier --write --end-of-line auto --ignore-path .prettierignore"
+    ]
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@next/eslint-plugin-next": "^15.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^10.0.0",
+    "eslint-plugin-import": "^2.0.0",
+    "eslint-plugin-jsx-a11y": "^6.0.0",
+    "eslint-plugin-react": "^7.0.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "globals": "^16.0.0",
+    "husky": "^9.0.0",
+    "lint-staged": "^16.0.0",
+    "prettier": "^3.0.0",
+    "ts-node": "^10.0.0",
+    "typescript": "^5.0.0",
+    "typescript-eslint": "^8.0.0"
+  }
+}

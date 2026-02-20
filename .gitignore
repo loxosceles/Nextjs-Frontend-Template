@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+.next/
+frontend/out/
+dist/
+cdk.out/
+
+# Env files — never commit
+.env
+.env.local
+.env.dev
+.env.prod
+.devcontainer/.env
+
+# CDK
+infrastructure/cdk.context.json
+
+# Misc
+.DS_Store
+*.pem
+**/__bak__*
+__bak__*
+
+# npm lockfiles (pnpm only)
+package-lock.json
+**/package-lock.json
+
+# VSCode — commit settings + mcp, ignore the rest
+.vscode/*
+!.vscode/settings.json
+!.vscode/mcp.json
+
+# Amazon Q
+.amazonq/*
+!.amazonq/mcp.json
+!.amazonq/rules/
+
+# Auto-generated agent symlinks
+.github/agents/
+.amazonq/agents/
+
+# Mounted at devcontainer start — not committed
+docs/ai-dev-rules/
+
+# Planning docs — local only
+docs/planning/

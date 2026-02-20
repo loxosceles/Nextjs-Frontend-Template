@@ -1,0 +1,88 @@
+name: Version and Tag
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+jobs:
+  version-and-tag:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Bump version
+        id: version
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+          # Safety check - validate exactly one version label exists
+          VERSION_LABELS=$(echo '${{ toJson(github.event.pull_request.labels.*.name) }}' | jq -r '.[]' | grep -E '^(major|minor|patch)$' 2>/dev/null || echo "")
+
+          if [ -z "$VERSION_LABELS" ]; then
+            VERSION_COUNT=0
+          else
+            VERSION_COUNT=$(echo "$VERSION_LABELS" | wc -l)
+          fi
+
+          if [ "$VERSION_COUNT" -eq 0 ]; then
+            echo "❌ Safety check failed: No version label found"
+            exit 1
+          elif [ "$VERSION_COUNT" -gt 1 ]; then
+            echo "❌ Safety check failed: Multiple version labels found: $VERSION_LABELS"
+            exit 1
+          fi
+
+          VERSION_TYPE="$VERSION_LABELS"
+          echo "Using version type: $VERSION_TYPE"
+
+          # Get current version and validate format
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          if ! echo "$CURRENT_VERSION" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' >/dev/null; then
+            echo "❌ Invalid version format: $CURRENT_VERSION (expected: x.y.z)"
+            exit 1
+          fi
+
+          # Calculate new version based on label
+          NEW_VERSION=$(node -p "
+            const [major, minor, patch] = require('./package.json').version.split('.').map(Number);
+            const type = '$VERSION_TYPE';
+            if (type === 'major') {
+              \`\${major + 1}.0.0\`;
+            } else if (type === 'minor') {
+              \`\${major}.\${minor + 1}.0\`;
+            } else {
+              \`\${major}.\${minor}.\${patch + 1}\`;
+            }
+          ")
+
+          # Update package.json
+          node -e "
+            const pkg = require('./package.json');
+            pkg.version = '$NEW_VERSION';
+            require('fs').writeFileSync('./package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "version_type=$VERSION_TYPE" >> $GITHUB_OUTPUT
+          echo "Bumped $VERSION_TYPE version from $CURRENT_VERSION to $NEW_VERSION"
+
+      - name: Commit and tag
+        run: |
+          git add package.json
+          git commit -m "Bump version to ${{ steps.version.outputs.new_version }}"
+          git tag "v${{ steps.version.outputs.new_version }}"
+          git push origin main || { echo "❌ Failed to push version commit to main"; exit 1; }
+          git push origin "v${{ steps.version.outputs.new_version }}" || { echo "❌ Failed to push version tag"; exit 1; }

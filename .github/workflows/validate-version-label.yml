@@ -1,0 +1,47 @@
+name: Validate Version Label
+
+on:
+  pull_request:
+    types: [opened, synchronize, labeled, unlabeled]
+    branches: [main]
+
+jobs:
+  validate-label:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate version label
+        run: |
+          # Extract all PR labels
+          LABELS=$(echo '${{ toJson(github.event.pull_request.labels.*.name) }}' | jq -r '.[]' 2>/dev/null || echo "")
+
+          # Filter for version labels
+          VERSION_LABELS=$(echo "$LABELS" | grep -E '^(major|minor|patch)$' 2>/dev/null || echo "")
+
+          # Count version labels with explicit empty string handling
+          if [ -z "$VERSION_LABELS" ]; then
+            VERSION_COUNT=0
+          else
+            VERSION_COUNT=$(echo "$VERSION_LABELS" | wc -l)
+          fi
+
+          echo "All PR labels: $(echo '${{ toJson(github.event.pull_request.labels.*.name) }}' | jq -r 'join(", ")')"
+          echo "Version labels found: $VERSION_LABELS"
+          echo "Version label count: $VERSION_COUNT"
+
+          # Validate exactly one version label exists
+          if [ "$VERSION_COUNT" -eq 0 ]; then
+            echo "❌ Error: PR must have exactly one version label (major, minor, or patch)"
+            echo "Please add one of the following labels to this PR:"
+            echo "  • major - for breaking changes (x.0.0)"
+            echo "  • minor - for new features (0.x.0)"
+            echo "  • patch - for bug fixes (0.0.x)"
+            exit 1
+          elif [ "$VERSION_COUNT" -gt 1 ]; then
+            echo "❌ Error: PR has multiple version labels. Use exactly one: major, minor, or patch"
+            echo "Version labels found: $VERSION_LABELS"
+            exit 1
+          else
+            echo "✅ Valid version label found: $VERSION_LABELS"
+            echo "This PR will create a $VERSION_LABELS version bump when merged."
+          fi
