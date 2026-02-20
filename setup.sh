@@ -181,15 +181,15 @@ _mcp > .amazonq/mcp.json
 
 # ─── .devcontainer/.env ───────────────────────────────────────────────────────
 cat > .devcontainer/.env <<ENV
-GITHUB_USERNAME=${GITHUB_USERNAME}
-GIT_NAME=${GIT_NAME}
-GIT_EMAIL=${GIT_EMAIL}
+GITHUB_USERNAME=${GITHUB_USERNAME:-}
+GIT_NAME=${GIT_NAME:-}
+GIT_EMAIL=${GIT_EMAIL:-}
 ENV
 
 # ─── git init ────────────────────────────────────────────────────────────────
 git init
-git config user.name "$GIT_NAME"
-git config user.email "$GIT_EMAIL"
+[[ -n "${GIT_NAME:-}"  ]] && git config user.name "$GIT_NAME"
+[[ -n "${GIT_EMAIL:-}" ]] && git config user.email "$GIT_EMAIL"
 
 # ─── Offer to save host config ────────────────────────────────────────────────
 if [[ ! -f "$HOST_CONFIG" ]]; then
@@ -197,10 +197,10 @@ if [[ ! -f "$HOST_CONFIG" ]]; then
   if [[ "${ans,,}" == "y" ]]; then
     mkdir -p "$(dirname "$HOST_CONFIG")"
     cat > "$HOST_CONFIG" <<CFG
-GITHUB_USERNAME=${GITHUB_USERNAME}
-GIT_NAME=${GIT_NAME}
-GIT_EMAIL=${GIT_EMAIL}
-SSH_MODE=${SSH_MODE}
+GITHUB_USERNAME=${GITHUB_USERNAME:-}
+GIT_NAME=${GIT_NAME:-}
+GIT_EMAIL=${GIT_EMAIL:-}
+SSH_MODE=${SSH_MODE:-default}
 SSH_CONTEXT=${SSH_CONTEXT:-}
 AWS_CREDENTIALS_PATH=${AWS_CREDENTIALS_PATH:-}
 ZSH_CONFIG_PATH=${ZSH_CONFIG_PATH:-}
