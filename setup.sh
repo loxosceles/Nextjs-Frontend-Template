@@ -118,16 +118,16 @@ _sed README.md
 info "Generating devcontainer.json..."
 
 if [[ "$SSH_MODE" == "contexts" ]]; then
-  SSH_MOUNT="{\"type\":\"bind\",\"source\":\"\${localEnv:HOME}/.ssh/contexts/${SSH_CONTEXT}\",\"target\":\"/home/vscode/.ssh/contexts/${SSH_CONTEXT}\"}"
+  SSH_MOUNT="{\"type\":\"bind\",\"source\":\"\${localEnv:HOME}/.ssh/contexts/${SSH_CONTEXT}\",\"target\":\"/home/node/.ssh/contexts/${SSH_CONTEXT}\"}"
 else
-  SSH_MOUNT="{\"type\":\"bind\",\"source\":\"\${localEnv:HOME}/.ssh\",\"target\":\"/home/vscode/.ssh\"}"
+  SSH_MOUNT="{\"type\":\"bind\",\"source\":\"\${localEnv:HOME}/.ssh\",\"target\":\"/home/node/.ssh\"}"
 fi
 
 MOUNTS="[$SSH_MOUNT"
-[[ "${MOUNT_AWS:-}"  == "true" ]] && MOUNTS+=",{\"type\":\"bind\",\"source\":\"${AWS_CREDENTIALS_PATH}\",\"target\":\"/home/vscode/.aws\"}"
-[[ "${MOUNT_ZSH:-}"  == "true" ]] && MOUNTS+=",{\"type\":\"bind\",\"source\":\"${ZSH_CONFIG_PATH}\",\"target\":\"/home/vscode/.config/zsh\"}"
-[[ "${MOUNT_TMUX:-}" == "true" ]] && MOUNTS+=",{\"type\":\"bind\",\"source\":\"${TMUX_CONFIG_PATH}\",\"target\":\"/home/vscode/.tmux\"}"
-[[ "${MOUNT_HIST:-}" == "true" ]] && MOUNTS+=",{\"type\":\"bind\",\"source\":\"${ZSH_HISTORY_PATH}\",\"target\":\"/home/vscode/.zsh_history\"}"
+[[ "${MOUNT_AWS:-}"  == "true" ]] && MOUNTS+=",{\"type\":\"bind\",\"source\":\"${AWS_CREDENTIALS_PATH}\",\"target\":\"/home/node/.aws\"}"
+[[ "${MOUNT_ZSH:-}"  == "true" ]] && MOUNTS+=",{\"type\":\"bind\",\"source\":\"${ZSH_CONFIG_PATH}\",\"target\":\"/home/node/.config/zsh\"}"
+[[ "${MOUNT_TMUX:-}" == "true" ]] && MOUNTS+=",{\"type\":\"bind\",\"source\":\"${TMUX_CONFIG_PATH}\",\"target\":\"/home/node/.tmux\"}"
+[[ "${MOUNT_HIST:-}" == "true" ]] && MOUNTS+=",{\"type\":\"bind\",\"source\":\"${ZSH_HISTORY_PATH}\",\"target\":\"/home/node/.zsh_history\"}"
 [[ "${MOUNT_STD:-}"  == "true" ]] && MOUNTS+=",{\"type\":\"bind\",\"source\":\"${CODING_STANDARDS_PATH}\",\"target\":\"\${containerWorkspaceFolder}/docs/ai-dev-rules\"}"
 MOUNTS+="]"
 
