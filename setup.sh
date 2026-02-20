@@ -92,6 +92,33 @@ info "Downloading template files..."
 curl -fsSL "$TEMPLATE_REPO" | tar -xz --strip-components=1 \
   --exclude='setup.sh' --exclude='.git'
 
+# ─── Create Next.js app ───────────────────────────────────────────────────────
+info "Creating Next.js app..."
+# Stash our template additions, run create-next-app clean, restore additions
+mv frontend frontend-additions
+pnpm create next-app@latest frontend --typescript --tailwind --app --no-src-dir --import-alias "@/*" --no-git --no-eslint
+
+# Patch next.config.ts for static export
+cat > frontend/next.config.ts <<'NEXTCONF'
+import type { NextConfig } from 'next';
+
+const nextConfig: NextConfig = {
+  output: 'export',
+  trailingSlash: true,
+  images: { unoptimized: true }
+};
+
+export default nextConfig;
+NEXTCONF
+
+# Restore template additions
+cp -r frontend-additions/app/__tests__ frontend/app/
+cp frontend-additions/vitest.config.ts frontend-additions/vitest.setup.ts frontend-additions/.gitignore frontend/
+for d in components hooks lib shared; do
+  [ -f "frontend-additions/$d/.gitkeep" ] && cp "frontend-additions/$d/.gitkeep" "frontend/$d/"
+done
+rm -rf frontend-additions
+
 info "Downloading devcontainer files..."
 curl -fsSL "$DEVCONTAINER_TEMPLATES_URL" | tar -xz \
   --strip-components=2 -C .devcontainer \
