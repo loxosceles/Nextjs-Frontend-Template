@@ -86,6 +86,8 @@ if [[ "${SKIP_MCP:-}" != "true" ]]; then
       read -rp "  Trello API key (enter to skip): "   TRELLO_API_KEY </dev/tty
       read -rp "  Trello token (enter to skip): "     TRELLO_TOKEN </dev/tty
     fi
+  else
+    info "MCP credentials loaded from $HOST_CONFIG"
   fi
 fi
 
@@ -201,12 +203,12 @@ _mcp() {
     "github": {
       "command": "docker",
       "args": ["run", "-i", "--rm", "-e", "GITHUB_PERSONAL_ACCESS_TOKEN", "ghcr.io/github/github-mcp-server"],
-      "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_MCP_TOKEN:-<GITHUB_MCP_TOKEN>}" }
+      "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_MCP_TOKEN}" }
     },
     "trello": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-trello"],
-      "env": { "TRELLO_API_KEY": "${TRELLO_API_KEY:-<TRELLO_API_KEY>}", "TRELLO_TOKEN": "${TRELLO_TOKEN:-<TRELLO_TOKEN>}" }
+      "env": { "TRELLO_API_KEY": "${TRELLO_API_KEY}", "TRELLO_TOKEN": "${TRELLO_TOKEN}" }
     },
     "chrome-devtools": {
       "command": "npx",
