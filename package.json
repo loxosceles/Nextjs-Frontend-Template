@@ -15,9 +15,10 @@
     "test:frontend": "pnpm --filter=frontend run test",
     "synth": "pnpm --filter=infrastructure run synth",
     "deploy:dev": "ENVIRONMENT=dev pnpm --filter=infrastructure run deploy",
+    "deploy:pipeline:dev": "ENVIRONMENT=dev pnpm --filter=infrastructure run deploy:pipeline",
+    "deploy:pipeline:prod": "ENVIRONMENT=prod pnpm --filter=infrastructure run deploy:pipeline",
     "github-vars": "ENVIRONMENT=dev pnpm --filter=infrastructure run github-vars",
     "setup-oidc": "ENVIRONMENT=dev pnpm --filter=infrastructure run setup-oidc",
-    "deploy:prod": "echo 'Production can only be deployed via GitHub Actions' && exit 1",
     "destroy:dev": "ENVIRONMENT=dev pnpm --filter=infrastructure run destroy:dev",
     "prepare": "husky"
   },

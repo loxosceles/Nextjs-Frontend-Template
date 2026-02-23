@@ -47,9 +47,12 @@ pnpm github-vars    # reads from project.config.ts and .env.dev
 ## Deploy
 
 ```sh
-pnpm deploy:dev   # ENVIRONMENT=dev CDK deploy + Next.js build + S3 upload
-pnpm deploy:prod  # ENVIRONMENT=prod
+pnpm deploy:dev            # CDK deploy + Next.js build + S3 upload + CF invalidation
+pnpm deploy:pipeline:dev   # Deploy CI/CD pipeline stack for dev
+pnpm deploy:pipeline:prod  # Deploy CI/CD pipeline stack for prod
 ```
+
+> Production web deployment is blocked locally — it must go through the CI/CD pipeline.
 
 ## CI/CD Flow
 

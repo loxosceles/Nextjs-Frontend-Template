@@ -6,6 +6,7 @@
     "build": "tsc",
     "synth": "ts-node lib/infra.ts synth",
     "deploy": "ts-node lib/infra.ts deploy",
+    "deploy:pipeline": "ts-node lib/infra.ts deploy:pipeline",
     "publish": "ts-node lib/infra.ts publish",
     "ssm-upload": "ts-node lib/infra.ts ssm-upload",
     "github-vars": "ts-node lib/infra.ts github-vars",

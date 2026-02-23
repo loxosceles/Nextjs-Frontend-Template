@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
-import { Stage, PROJECT_ROOT } from '../../configs/project.config';
+import { Stage, SUPPORTED_STAGES, PROJECT_ROOT } from '../../configs/project.config';
 
 export interface BootstrapEnv {
   cdkDefaultAccount: string;
@@ -21,7 +21,15 @@ export interface BootstrapEnv {
 export class EnvironmentManager {
   constructor(private readonly stage: Stage) {}
 
-  load(): BootstrapEnv {
+  static getStage(): Stage {
+    const stage = process.env.ENVIRONMENT as Stage;
+    if (!stage || !SUPPORTED_STAGES.includes(stage)) {
+      throw new Error(`Invalid ENVIRONMENT: ${stage}. Must be one of: ${SUPPORTED_STAGES.join(', ')}`);
+    }
+    return stage;
+  }
+
+  load(target: 'web' | 'pipeline' = 'web'): BootstrapEnv {
     const envPath = path.join(PROJECT_ROOT, 'infrastructure', `.env.${this.stage}`);
     let env: Record<string, string> = {};
 
@@ -34,7 +42,7 @@ export class EnvironmentManager {
       if (v !== undefined) env[k] = v;
     }
 
-    this.validate(env);
+    this.validate(env, target);
 
     return {
       cdkDefaultAccount: env.CDK_DEFAULT_ACCOUNT,
@@ -48,9 +56,11 @@ export class EnvironmentManager {
     };
   }
 
-  private validate(env: Record<string, string>): void {
+  private validate(env: Record<string, string>, target: 'web' | 'pipeline'): void {
     const required = ['CDK_DEFAULT_ACCOUNT', 'CDK_DEFAULT_REGION'];
-    if (this.stage === 'prod') required.push('PROD_DOMAIN_NAME', 'CERTIFICATE_ARN');
+    if (this.stage === 'prod' && target === 'web') {
+      required.push('PROD_DOMAIN_NAME', 'CERTIFICATE_ARN');
+    }
     const missing = required.filter(k => !env[k]);
     if (missing.length > 0) {
       throw new Error(

@@ -14,20 +14,20 @@ import { CloudFormationClient, DescribeStacksCommand } from '@aws-sdk/client-clo
 import { CloudFrontClient, CreateInvalidationCommand } from '@aws-sdk/client-cloudfront';
 import { SSMClient, PutParameterCommand } from '@aws-sdk/client-ssm';
 import { IAMClient, ListOpenIDConnectProvidersCommand, CreateOpenIDConnectProviderCommand } from '@aws-sdk/client-iam';
-import { EnvironmentManager } from './core/environment-manager';
-import { PROJECT_NAME, SUPPORTED_STAGES, Stage, PROJECT_ROOT, FRONTEND_OUT_DIR } from '../configs/project.config';
+import { EnvironmentManager, BootstrapEnv } from './core/environment-manager';
+import { PROJECT_NAME, PROJECT_ROOT, FRONTEND_OUT_DIR } from '../configs/project.config';
 import { getStackConfig } from '../configs/stack-config';
 
 // ─── Stage validation ────────────────────────────────────────────────────────
-const stage = process.env.ENVIRONMENT as Stage;
-if (!stage || !SUPPORTED_STAGES.includes(stage)) {
-  console.error(`Invalid ENVIRONMENT: ${stage}. Must be one of: ${SUPPORTED_STAGES.join(', ')}`);
-  process.exit(1);
-}
+const stage = EnvironmentManager.getStage();
 
 const config = getStackConfig(stage);
-const bootstrap = new EnvironmentManager(stage).load();
-const region = bootstrap.cdkDefaultRegion;
+let _bootstrap: BootstrapEnv | undefined;
+function bootstrap(): BootstrapEnv {
+  if (!_bootstrap) _bootstrap = new EnvironmentManager(stage).load();
+  return _bootstrap;
+}
+function region(): string { return bootstrap().cdkDefaultRegion; }
 const ssmPrefix = `/${PROJECT_NAME}/${stage}`;
 
 // ─── Commands ────────────────────────────────────────────────────────────────
@@ -35,7 +35,11 @@ const [command] = process.argv.slice(2);
 
 async function main() {
   switch (command) {
-    case 'deploy':    await deploy(); break;
+    case 'deploy':
+      if (stage === 'prod') { console.error('Production deploy must go through CI/CD pipeline'); process.exit(1); }
+      await deploy();
+      break;
+    case 'deploy:pipeline': await deployPipeline(); break;
     case 'publish':   await publish(); break;
     case 'ssm-upload': await ssmUpload(); break;
     case 'github-vars': await githubVars(); break;
@@ -47,9 +51,15 @@ async function main() {
       break;
     default:
       console.log('Usage: ts-node lib/infra.ts <command>');
-      console.log('Commands: deploy | publish | ssm-upload | github-vars | setup-oidc | synth | destroy');
+      console.log('Commands: deploy | deploy:pipeline | publish | ssm-upload | github-vars | setup-oidc | synth | destroy');
       process.exit(1);
   }
+}
+
+async function deployPipeline() {
+  console.log(`🚀 Deploying pipeline stack for ${stage}...`);
+  await run('npx', ['cdk', 'deploy', `${PROJECT_NAME}-pipeline-${stage}`, '--require-approval', 'never', '-c', 'deployTarget=pipeline']);
+  console.log('✅ Pipeline stack deployed');
 }
 
 async function deploy() {
@@ -69,7 +79,7 @@ async function publish() {
 
   const distId = await getStackOutput('CloudfrontDistributionId');
   console.log('🔄 Invalidating CloudFront cache...');
-  await new CloudFrontClient({ region }).send(new CreateInvalidationCommand({
+  await new CloudFrontClient({ region: region() }).send(new CreateInvalidationCommand({
     DistributionId: distId,
     InvalidationBatch: { Paths: { Quantity: 1, Items: ['/*'] }, CallerReference: `${Date.now()}` }
   }));
@@ -82,7 +92,7 @@ async function ssmUpload() {
   console.log(`📤 Uploading bootstrap params from ${envPath}...`);
 
   const content = await fs.readFile(envPath, 'utf-8');
-  const ssm = new SSMClient({ region });
+  const ssm = new SSMClient({ region: region() });
 
   for (const line of content.split('\n')) {
     const match = line.match(/^([A-Z_]+)=(.+)$/);
@@ -101,8 +111,8 @@ async function githubVars() {
   console.log('Setting GitHub repo variables...');
   const vars: Record<string, string> = {
     PROJECT_NAME,
-    AWS_ACCOUNT_ID: bootstrap.cdkDefaultAccount,
-    AWS_REGION_DEFAULT: bootstrap.cdkDefaultRegion
+    AWS_ACCOUNT_ID: bootstrap().cdkDefaultAccount,
+    AWS_REGION_DEFAULT: bootstrap().cdkDefaultRegion
   };
   for (const [name, value] of Object.entries(vars)) {
     await run('gh', ['variable', 'set', name, '--body', value], PROJECT_ROOT);
@@ -112,7 +122,7 @@ async function githubVars() {
 }
 
 async function setupOidc() {
-  const iam = new IAMClient({ region });
+  const iam = new IAMClient({ region: region() });
   const providerUrl = 'token.actions.githubusercontent.com';
   const res = await iam.send(new ListOpenIDConnectProvidersCommand({}));
   const exists = res.OpenIDConnectProviderList?.some(
@@ -131,7 +141,7 @@ async function setupOidc() {
 }
 
 async function getStackOutput(outputKey: string): Promise<string> {
-  const cf = new CloudFormationClient({ region });
+  const cf = new CloudFormationClient({ region: region() });
   const res = await cf.send(new DescribeStacksCommand({ StackName: config.stackName }));
   const output = res.Stacks?.[0]?.Outputs?.find((o: { OutputKey?: string }) => o.OutputKey === outputKey);
   if (!output?.OutputValue) throw new Error(`Output ${outputKey} not found in ${config.stackName}`);
@@ -139,7 +149,7 @@ async function getStackOutput(outputKey: string): Promise<string> {
 }
 
 async function syncToS3(dir: string, bucket: string) {
-  const s3 = new S3Client({ region });
+  const s3 = new S3Client({ region: region() });
   const CONTENT_TYPES: Record<string, string> = {
     '.html': 'text/html', '.css': 'text/css', '.js': 'application/javascript',
     '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg',
