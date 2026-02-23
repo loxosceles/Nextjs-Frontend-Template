@@ -97,7 +97,7 @@ async function ssmUpload() {
 async function getStackOutput(outputKey: string): Promise<string> {
   const cf = new CloudFormationClient({ region });
   const res = await cf.send(new DescribeStacksCommand({ StackName: config.stackName }));
-  const output = res.Stacks?.[0]?.Outputs?.find(o => o.OutputKey === outputKey);
+  const output = res.Stacks?.[0]?.Outputs?.find((o: { OutputKey?: string }) => o.OutputKey === outputKey);
   if (!output?.OutputValue) throw new Error(`Output ${outputKey} not found in ${config.stackName}`);
   return output.OutputValue;
 }
