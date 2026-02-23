@@ -225,23 +225,31 @@ git init
 [[ -n "${GIT_EMAIL:-}" ]] && git config user.email "$GIT_EMAIL"
 
 # ─── Save host config ────────────────────────────────────────────────────────
+_upsert_config() {
+  local key="$1" value="$2" file="$3"
+  if grep -q "^${key}=" "$file" 2>/dev/null; then
+    sed -i '' "s|^${key}=.*|${key}=\"${value}\"|" "$file"
+  else
+    echo "${key}=\"${value}\"" >> "$file"
+  fi
+}
+
 _write_host_config() {
   mkdir -p "$(dirname "$HOST_CONFIG")"
-  cat > "$HOST_CONFIG" <<CFG
-GITHUB_USERNAME="${GITHUB_USERNAME:-}"
-GIT_NAME="${GIT_NAME:-}"
-GIT_EMAIL="${GIT_EMAIL:-}"
-SSH_MODE="${SSH_MODE:-default}"
-SSH_CONTEXT="${SSH_CONTEXT:-}"
-AWS_CREDENTIALS_PATH="${AWS_CREDENTIALS_PATH:-}"
-ZSH_CONFIG_PATH="${ZSH_CONFIG_PATH:-}"
-TMUX_CONFIG_PATH="${TMUX_CONFIG_PATH:-}"
-ZSH_HISTORY_PATH="${ZSH_HISTORY_PATH:-}"
-CODING_STANDARDS_PATH="${CODING_STANDARDS_PATH:-}"
-GITHUB_MCP_TOKEN="${GITHUB_MCP_TOKEN:-}"
-TRELLO_API_KEY="${TRELLO_API_KEY:-}"
-TRELLO_TOKEN="${TRELLO_TOKEN:-}"
-CFG
+  touch "$HOST_CONFIG"
+  _upsert_config GITHUB_USERNAME       "${GITHUB_USERNAME:-}"       "$HOST_CONFIG"
+  _upsert_config GIT_NAME              "${GIT_NAME:-}"              "$HOST_CONFIG"
+  _upsert_config GIT_EMAIL             "${GIT_EMAIL:-}"             "$HOST_CONFIG"
+  _upsert_config SSH_MODE              "${SSH_MODE:-default}"       "$HOST_CONFIG"
+  _upsert_config SSH_CONTEXT           "${SSH_CONTEXT:-}"           "$HOST_CONFIG"
+  _upsert_config AWS_CREDENTIALS_PATH  "${AWS_CREDENTIALS_PATH:-}"  "$HOST_CONFIG"
+  _upsert_config ZSH_CONFIG_PATH       "${ZSH_CONFIG_PATH:-}"       "$HOST_CONFIG"
+  _upsert_config TMUX_CONFIG_PATH      "${TMUX_CONFIG_PATH:-}"      "$HOST_CONFIG"
+  _upsert_config ZSH_HISTORY_PATH      "${ZSH_HISTORY_PATH:-}"      "$HOST_CONFIG"
+  _upsert_config CODING_STANDARDS_PATH "${CODING_STANDARDS_PATH:-}" "$HOST_CONFIG"
+  _upsert_config GITHUB_MCP_TOKEN      "${GITHUB_MCP_TOKEN:-}"      "$HOST_CONFIG"
+  _upsert_config TRELLO_API_KEY        "${TRELLO_API_KEY:-}"        "$HOST_CONFIG"
+  _upsert_config TRELLO_TOKEN          "${TRELLO_TOKEN:-}"          "$HOST_CONFIG"
   ok "Saved to $HOST_CONFIG"
 }
 
