@@ -1,57 +1,30 @@
 version: 0.2
 
 env:
-  variables:
-    ENVIRONMENT: dev
+  exported-variables:
+    - CLOUDFRONT_DOMAIN
 
 phases:
   install:
     runtime-versions:
-      nodejs: 20
+      nodejs: 22
     commands:
-      - rm -rf node_modules
-      - find . -name "node_modules" -type d -prune -exec rm -rf {} +
-      - npm install -g pnpm ts-node
+      - corepack enable && corepack install
+      - npm install -g ts-node
       - pnpm install --frozen-lockfile
-
-  pre_build:
-    commands:
-      - echo "Fetching bootstrap config from SSM for $ENVIRONMENT..."
-      - cd infrastructure
-      - export $(ts-node lib/cli/bin/ssm-params.ts export --target=infrastructure --format=env | xargs)
-      - cd ..
-
-      - |
-        if [ "$ENVIRONMENT" = "prod" ]; then
-          export CERTIFICATE_ARN=$(aws ssm get-parameter \
-            --name /__PROJECT_NAME__/prod/certificate-arn \
-            --region us-east-1 \
-            --query 'Parameter.Value' --output text)
-        fi
-
-      - |
-        MISSING=""
-        [ -z "$CDK_DEFAULT_ACCOUNT" ] && MISSING="$MISSING CDK_DEFAULT_ACCOUNT"
-        [ -z "$CDK_DEFAULT_REGION" ] && MISSING="$MISSING CDK_DEFAULT_REGION"
-        if [ "$ENVIRONMENT" = "prod" ]; then
-          [ -z "$PROD_DOMAIN_NAME" ] && MISSING="$MISSING PROD_DOMAIN_NAME"
-          [ -z "$CERTIFICATE_ARN" ]  && MISSING="$MISSING CERTIFICATE_ARN"
-        fi
-        if [ -n "$MISSING" ]; then
-          echo "ERROR: Missing bootstrap params:$MISSING"
-          exit 1
-        fi
-      - echo "✓ Bootstrap config loaded — account=$CDK_DEFAULT_ACCOUNT region=$CDK_DEFAULT_REGION stage=$ENVIRONMENT"
 
   build:
     commands:
-      - cd infrastructure && pnpm provision:$ENVIRONMENT && cd ..
-      - cd infrastructure && pnpm build-and-publish-web:$ENVIRONMENT && cd ..
+      - echo "Deploying $ENVIRONMENT..."
+      - ENVIRONMENT=$ENVIRONMENT pnpm --filter=infrastructure run deploy
 
   post_build:
     commands:
-      - CLOUDFRONT_DOMAIN=$(aws ssm get-parameter --name /__PROJECT_NAME__/$ENVIRONMENT/cloudfront-domain --query 'Parameter.Value' --output text)
-      - echo "✓ Deployed — https://${CLOUDFRONT_DOMAIN}"
+      - |
+        CLOUDFRONT_DOMAIN=$(aws ssm get-parameter \
+          --name /${PROJECT_NAME}/$ENVIRONMENT/cloudfront-domain \
+          --query 'Parameter.Value' --output text)
+        echo "✓ Deployed — https://${CLOUDFRONT_DOMAIN}"
 
 cache:
   paths:

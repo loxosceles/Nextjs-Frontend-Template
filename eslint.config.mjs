@@ -17,7 +17,9 @@ const IGNORE_PATTERNS = [
   '**/build/**',
   '**/cdk.out/**',
   '**/*.d.ts',
-  '**/__bak__*/**'
+  '**/__bak__*/**',
+  '**/vitest.config.ts',
+  '**/vitest.setup.ts'
 ];
 
 const SHARED_RULES = {
@@ -57,8 +59,7 @@ export default [
     rules: {
       ...SHARED_RULES,
       '@typescript-eslint/no-unused-vars': 'warn',
-      '@typescript-eslint/no-explicit-any': 'error',
-      'import/no-unresolved': 'error'
+      '@typescript-eslint/no-explicit-any': 'error'
     }
   },
 
@@ -83,7 +84,7 @@ export default [
 
   // Infrastructure CLI — allow console
   {
-    files: ['infrastructure/lib/cli/bin/**/*.ts'],
+    files: ['infrastructure/lib/infra.ts'],
     rules: { 'no-console': 'off' }
   },
 

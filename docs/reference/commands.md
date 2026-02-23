@@ -17,6 +17,12 @@
 | `pnpm deploy:dev` | Deploy to dev (CDK + build + publish) |
 | `pnpm deploy:prod` | Deploy to prod |
 
+## Setup Scripts
+
+| Script | Description |
+|--------|-------------|
+| `pnpm github-vars` | Set GitHub repo variables for CI/CD (requires `gh auth login`) |
+
 ## Infrastructure CLI (`infrastructure/lib/infra.ts`)
 
 Single entry point — 1-tier pattern. All commands via `ts-node lib/infra.ts <command>`.

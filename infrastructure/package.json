@@ -8,6 +8,8 @@
     "deploy": "ts-node lib/infra.ts deploy",
     "publish": "ts-node lib/infra.ts publish",
     "ssm-upload": "ts-node lib/infra.ts ssm-upload",
+    "github-vars": "ts-node lib/infra.ts github-vars",
+    "setup-oidc": "ts-node lib/infra.ts setup-oidc",
     "destroy:dev": "ENVIRONMENT=dev ts-node lib/infra.ts destroy",
     "destroy:prod": "echo 'Production destroy not allowed' && exit 1",
     "test": "vitest run",
@@ -23,6 +25,7 @@
   "dependencies": {
     "@aws-sdk/client-cloudformation": "^3.0.0",
     "@aws-sdk/client-cloudfront": "^3.0.0",
+    "@aws-sdk/client-iam": "^3.0.0",
     "@aws-sdk/client-s3": "^3.0.0",
     "@aws-sdk/client-ssm": "^3.0.0",
     "aws-cdk-lib": "^2.0.0",

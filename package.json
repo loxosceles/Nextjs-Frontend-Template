@@ -15,12 +15,15 @@
     "test:frontend": "pnpm --filter=frontend run test",
     "synth": "pnpm --filter=infrastructure run synth",
     "deploy:dev": "ENVIRONMENT=dev pnpm --filter=infrastructure run deploy",
-    "deploy:prod": "ENVIRONMENT=prod pnpm --filter=infrastructure run deploy",
+    "github-vars": "ENVIRONMENT=dev pnpm --filter=infrastructure run github-vars",
+    "setup-oidc": "ENVIRONMENT=dev pnpm --filter=infrastructure run setup-oidc",
+    "deploy:prod": "echo 'Production can only be deployed via GitHub Actions' && exit 1",
+    "destroy:dev": "ENVIRONMENT=dev pnpm --filter=infrastructure run destroy:dev",
     "prepare": "husky"
   },
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx}": [
-      "eslint --fix",
+      "eslint --fix --no-warn-ignored",
       "prettier --write --end-of-line auto"
     ],
     "*.{json,md,yml}": [
@@ -34,6 +37,7 @@
     "@typescript-eslint/parser": "^8.0.0",
     "eslint": "^9.0.0",
     "eslint-config-prettier": "^10.0.0",
+    "eslint-import-resolver-typescript": "^4.0.0",
     "eslint-plugin-import": "^2.0.0",
     "eslint-plugin-jsx-a11y": "^6.0.0",
     "eslint-plugin-react": "^7.0.0",

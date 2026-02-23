@@ -11,7 +11,7 @@ const bootstrap: BootstrapEnv = {
 
 function buildTemplate(stage: 'dev' | 'prod') {
   const app = new cdk.App();
-  const stack = new WebStack(app, `WebStack-${stage}`, {
+  const stack = new WebStack(app, `test-web-${stage}`, {
     env: { account: bootstrap.cdkDefaultAccount, region: bootstrap.cdkDefaultRegion },
     stage,
     bootstrap

@@ -34,33 +34,8 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/GitHubActionsRole-${{ steps.config.outputs.stage }}
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/${{ vars.PROJECT_NAME }}-github-actions-${{ steps.config.outputs.stage }}
           aws-region: ${{ vars.AWS_REGION_DEFAULT }}
 
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22.x
-      - run: pnpm install --frozen-lockfile
-
-      - name: Validate SSM parameters
-        run: |
-          STAGE="${{ steps.config.outputs.stage }}"
-          cd infrastructure
-          if ! ENVIRONMENT=$STAGE npx ts-node lib/cli/bin/ssm-params.ts export --target=infrastructure --format=env >/dev/null 2>&1; then
-            echo "❌ SSM parameters missing for $STAGE. Run: cd infrastructure && ENVIRONMENT=$STAGE npx ts-node lib/cli/bin/ssm-params.ts upload --verify"
-            exit 1
-          fi
-          echo "✅ SSM parameters valid for $STAGE"
-
-      - name: Trigger dev pipeline
-        if: github.event_name == 'pull_request' && github.base_ref == 'dev'
-        run: aws codepipeline start-pipeline-execution --name __PROJECT_NAME__-pipeline-dev
-
-      - name: Trigger prod pipeline (PR merge)
-        if: github.event_name == 'pull_request' && github.base_ref == 'main'
-        run: aws codepipeline start-pipeline-execution --name __PROJECT_NAME__-pipeline-prod
-
-      - name: Trigger prod pipeline (after versioning)
-        if: github.event_name == 'workflow_run' && github.event.workflow_run.head_branch == 'main'
-        run: aws codepipeline start-pipeline-execution --name __PROJECT_NAME__-pipeline-prod
+      - name: Trigger pipeline
+        run: aws codepipeline start-pipeline-execution --name ${{ vars.PROJECT_NAME }}-pipeline-${{ steps.config.outputs.stage }}

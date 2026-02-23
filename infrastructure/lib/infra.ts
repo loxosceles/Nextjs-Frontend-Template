@@ -12,7 +12,8 @@ import * as fs from 'fs/promises';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { CloudFormationClient, DescribeStacksCommand } from '@aws-sdk/client-cloudformation';
 import { CloudFrontClient, CreateInvalidationCommand } from '@aws-sdk/client-cloudfront';
-import { SSMClient, PutParameterCommand, GetParameterCommand } from '@aws-sdk/client-ssm';
+import { SSMClient, PutParameterCommand } from '@aws-sdk/client-ssm';
+import { IAMClient, ListOpenIDConnectProvidersCommand, CreateOpenIDConnectProviderCommand } from '@aws-sdk/client-iam';
 import { EnvironmentManager } from './core/environment-manager';
 import { PROJECT_NAME, SUPPORTED_STAGES, Stage, PROJECT_ROOT, FRONTEND_OUT_DIR } from '../configs/project.config';
 import { getStackConfig } from '../configs/stack-config';
@@ -37,6 +38,8 @@ async function main() {
     case 'deploy':    await deploy(); break;
     case 'publish':   await publish(); break;
     case 'ssm-upload': await ssmUpload(); break;
+    case 'github-vars': await githubVars(); break;
+    case 'setup-oidc': await setupOidc(); break;
     case 'synth':     await run('npx', ['cdk', 'synth']); break;
     case 'destroy':
       if (stage === 'prod') { console.error('Production destroy not allowed'); process.exit(1); }
@@ -44,7 +47,7 @@ async function main() {
       break;
     default:
       console.log('Usage: ts-node lib/infra.ts <command>');
-      console.log('Commands: deploy | publish | ssm-upload | synth | destroy');
+      console.log('Commands: deploy | publish | ssm-upload | github-vars | setup-oidc | synth | destroy');
       process.exit(1);
   }
 }
@@ -94,6 +97,39 @@ async function ssmUpload() {
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
+async function githubVars() {
+  console.log('Setting GitHub repo variables...');
+  const vars: Record<string, string> = {
+    PROJECT_NAME,
+    AWS_ACCOUNT_ID: bootstrap.cdkDefaultAccount,
+    AWS_REGION_DEFAULT: bootstrap.cdkDefaultRegion
+  };
+  for (const [name, value] of Object.entries(vars)) {
+    await run('gh', ['variable', 'set', name, '--body', value], PROJECT_ROOT);
+  }
+  console.log('✅ GitHub variables set');
+  await run('gh', ['variable', 'list'], PROJECT_ROOT);
+}
+
+async function setupOidc() {
+  const iam = new IAMClient({ region });
+  const providerUrl = 'token.actions.githubusercontent.com';
+  const res = await iam.send(new ListOpenIDConnectProvidersCommand({}));
+  const exists = res.OpenIDConnectProviderList?.some(
+    (provider) => provider.Arn?.includes(providerUrl)
+  );
+  if (exists) {
+    console.log('✅ GitHub OIDC provider already exists');
+    return;
+  }
+  await iam.send(new CreateOpenIDConnectProviderCommand({
+    Url: `https://${providerUrl}`,
+    ClientIDList: ['sts.amazonaws.com'],
+    ThumbprintList: ['1c58a3a8518e8759bf075b76b750d4f2df264fcd']
+  }));
+  console.log('✅ GitHub OIDC provider created');
+}
+
 async function getStackOutput(outputKey: string): Promise<string> {
   const cf = new CloudFormationClient({ region });
   const res = await cf.send(new DescribeStacksCommand({ StackName: config.stackName }));

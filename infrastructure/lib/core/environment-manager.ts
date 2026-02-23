@@ -6,6 +6,8 @@ import { Stage, PROJECT_ROOT } from '../../configs/project.config';
 export interface BootstrapEnv {
   cdkDefaultAccount: string;
   cdkDefaultRegion: string;
+  githubOwner?: string;
+  githubRepo?: string;
   prodDomainName?: string;
   certificateArn?: string;
 }
@@ -37,6 +39,8 @@ export class EnvironmentManager {
     return {
       cdkDefaultAccount: env.CDK_DEFAULT_ACCOUNT,
       cdkDefaultRegion: env.CDK_DEFAULT_REGION,
+      githubOwner: env.GITHUB_OWNER,
+      githubRepo: env.GITHUB_REPO,
       ...(this.stage === 'prod' && {
         prodDomainName: env.PROD_DOMAIN_NAME,
         certificateArn: env.CERTIFICATE_ARN

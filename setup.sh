@@ -101,6 +101,7 @@ info "Creating Next.js app..."
 # Stash our template additions, run create-next-app clean, restore additions
 mv frontend frontend-additions
 npx create-next-app@latest frontend --typescript --tailwind --app --no-src-dir --import-alias "@/*" --no-git --no-eslint --use-pnpm --skip-install --yes
+[ -d frontend/.git ] && rm -rf frontend/.git  # create-next-app ignores --no-git (v16+)
 
 # Patch next.config.ts for static export
 cat > frontend/next.config.ts <<'NEXTCONF'
@@ -114,6 +115,9 @@ const nextConfig: NextConfig = {
 
 export default nextConfig;
 NEXTCONF
+
+# Exclude vitest.config.ts from Next.js type checking
+sed -i '' 's/"exclude": \["node_modules"\]/"exclude": ["node_modules", "vitest.config.ts"]/' frontend/tsconfig.json
 
 # Restore template additions
 cp -r frontend-additions/app/__tests__ frontend/app/
@@ -138,7 +142,7 @@ curl -fsSL "$VERSIONING_TEMPLATE_URL" | tar -xz \
 
 # ─── Patch project name ───────────────────────────────────────────────────────
 info "Patching project name..."
-_sed() { sed -i'' -e "s/__PROJECT_NAME__/${PROJECT_NAME}/g" "$1"; }
+_sed() { sed -i '' "s/__PROJECT_NAME__/${PROJECT_NAME}/g" "$1"; }
 _sed infrastructure/configs/project.config.ts
 _sed .github/workflows/trigger-pipeline.yml
 _sed buildspec.yml
