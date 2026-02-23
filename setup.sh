@@ -98,7 +98,7 @@ curl -fsSL "$TEMPLATE_REPO" | tar -xz --strip-components=1 \
 info "Creating Next.js app..."
 # Stash our template additions, run create-next-app clean, restore additions
 mv frontend frontend-additions
-npx create-next-app@latest frontend --typescript --tailwind --app --no-src-dir --import-alias "@/*" --no-git --no-eslint --use-pnpm --skip-install
+npx create-next-app@latest frontend --typescript --tailwind --app --no-src-dir --import-alias "@/*" --no-git --no-eslint --use-pnpm --skip-install --yes
 
 # Patch next.config.ts for static export
 cat > frontend/next.config.ts <<'NEXTCONF'
