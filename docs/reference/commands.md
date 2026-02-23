@@ -14,13 +14,17 @@
 | `pnpm test:frontend` | Frontend tests only |
 | `pnpm test:infra` | Infrastructure tests only |
 | `pnpm synth` | CDK synth (requires `infrastructure/.env.dev`) |
-| `pnpm deploy:dev` | Deploy to dev |
+| `pnpm deploy:dev` | Deploy to dev (CDK + build + publish) |
 | `pnpm deploy:prod` | Deploy to prod |
 
-## Infrastructure CLI (stubs — pending `@loxosceles/cdk-cli-core`)
+## Infrastructure CLI (`infrastructure/lib/infra.ts`)
+
+Single entry point — 1-tier pattern. All commands via `ts-node lib/infra.ts <command>`.
 
 | Command | Description |
 |---------|-------------|
-| `pnpm --filter=infrastructure deploy` | CDK deploy |
-| `pnpm --filter=infrastructure build-and-publish-web` | Build + S3 upload + CF invalidation |
-| `pnpm --filter=infrastructure ssm-params` | Manage SSM parameters |
+| `deploy` | CDK deploy + build frontend + S3 upload + CF invalidation |
+| `publish` | Build frontend + S3 upload + CF invalidation (no CDK) |
+| `ssm-upload` | Upload `.env.{stage}` params to SSM Parameter Store |
+| `synth` | CDK synth |
+| `destroy` | CDK destroy (blocked for prod) |
