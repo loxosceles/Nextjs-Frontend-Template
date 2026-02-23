@@ -117,7 +117,7 @@ NEXTCONF
 cp -r frontend-additions/app/__tests__ frontend/app/
 cp frontend-additions/vitest.config.ts frontend-additions/vitest.setup.ts frontend-additions/.gitignore frontend/
 for d in components hooks lib shared; do
-  [ -f "frontend-additions/$d/.gitkeep" ] && cp "frontend-additions/$d/.gitkeep" "frontend/$d/"
+  [ -f "frontend-additions/$d/.gitkeep" ] && mkdir -p "frontend/$d" && cp "frontend-additions/$d/.gitkeep" "frontend/$d/"
 done
 rm -rf frontend-additions
 
