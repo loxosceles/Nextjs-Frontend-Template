@@ -148,18 +148,22 @@ _sed README.md
 # ─── Generate devcontainer.json ───────────────────────────────────────────────
 info "Generating devcontainer.json..."
 
+CONTAINER_HOME="/home/node"
+
 if [[ "$SSH_MODE" == "contexts" ]]; then
-  SSH_MOUNT="{\"type\":\"bind\",\"source\":\"\${localEnv:HOME}/.ssh/contexts/${SSH_CONTEXT}\",\"target\":\"/home/node/.ssh/contexts/${SSH_CONTEXT}\"}"
+  SSH_MOUNT="{\"type\":\"bind\",\"source\":\"\${localEnv:HOME}/.ssh/contexts/${SSH_CONTEXT}\",\"target\":\"${CONTAINER_HOME}/.ssh/contexts/${SSH_CONTEXT}\"}"
 else
-  SSH_MOUNT="{\"type\":\"bind\",\"source\":\"\${localEnv:HOME}/.ssh\",\"target\":\"/home/node/.ssh\"}"
+  SSH_MOUNT="{\"type\":\"bind\",\"source\":\"\${localEnv:HOME}/.ssh\",\"target\":\"${CONTAINER_HOME}/.ssh\"}"
 fi
 
+_rel_source() { echo "\${localEnv:HOME}/${1#"$HOME"/}"; }
+
 MOUNTS="[$SSH_MOUNT"
-[[ "${MOUNT_AWS:-}"  == "true" ]] && MOUNTS+=",{\"type\":\"bind\",\"source\":\"${AWS_CREDENTIALS_PATH}\",\"target\":\"/home/node/.aws\"}"
-[[ "${MOUNT_ZSH:-}"  == "true" ]] && MOUNTS+=",{\"type\":\"bind\",\"source\":\"${ZSH_CONFIG_PATH}\",\"target\":\"/home/node/.config/zsh\"}"
-[[ "${MOUNT_TMUX:-}" == "true" ]] && MOUNTS+=",{\"type\":\"bind\",\"source\":\"${TMUX_CONFIG_PATH}\",\"target\":\"/home/node/.tmux\"}"
-[[ "${MOUNT_HIST:-}" == "true" ]] && MOUNTS+=",{\"type\":\"bind\",\"source\":\"${ZSH_HISTORY_PATH}\",\"target\":\"/home/node/.zsh_history\"}"
-[[ "${MOUNT_STD:-}"  == "true" ]] && MOUNTS+=",{\"type\":\"bind\",\"source\":\"${CODING_STANDARDS_PATH}\",\"target\":\"\${containerWorkspaceFolder}/docs/ai-dev-rules\"}"
+[[ "${MOUNT_AWS:-}"  == "true" ]] && MOUNTS+=",{\"type\":\"bind\",\"source\":\"$(_rel_source "${AWS_CREDENTIALS_PATH}")\",\"target\":\"${CONTAINER_HOME}/.aws\"}"
+[[ "${MOUNT_ZSH:-}"  == "true" ]] && MOUNTS+=",{\"type\":\"bind\",\"source\":\"$(_rel_source "${ZSH_CONFIG_PATH}")\",\"target\":\"${CONTAINER_HOME}/.config/zsh\"}"
+[[ "${MOUNT_TMUX:-}" == "true" ]] && MOUNTS+=",{\"type\":\"bind\",\"source\":\"$(_rel_source "${TMUX_CONFIG_PATH}")\",\"target\":\"${CONTAINER_HOME}/.tmux\"}"
+[[ "${MOUNT_HIST:-}" == "true" ]] && MOUNTS+=",{\"type\":\"bind\",\"source\":\"$(_rel_source "${ZSH_HISTORY_PATH}")\",\"target\":\"${CONTAINER_HOME}/.zsh_history\"}"
+[[ "${MOUNT_STD:-}"  == "true" ]] && MOUNTS+=",{\"type\":\"bind\",\"source\":\"$(_rel_source "${CODING_STANDARDS_PATH}")\",\"target\":\"\${containerWorkspaceFolder}/docs/ai-dev-rules\"}"
 MOUNTS+="]"
 
 STATUS_COLOR=$(printf '#%02x%02x%02x' $((RANDOM%156+50)) $((RANDOM%156+50)) $((RANDOM%156+50)))
