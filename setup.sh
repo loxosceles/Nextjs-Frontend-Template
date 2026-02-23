@@ -79,11 +79,13 @@ opt_mount "Mount ZSH history"      MOUNT_HIST ZSH_HISTORY_PATH      "${ZSH_HISTO
 opt_mount "Mount coding standards" MOUNT_STD  CODING_STANDARDS_PATH "${CODING_STANDARDS_PATH:-}"
 
 if [[ "${SKIP_MCP:-}" != "true" ]]; then
-  read -rp "Configure MCP servers? [y/N]: " ans </dev/tty
-  if [[ "${ans,,}" == "y" ]]; then
-    read -rp "  GitHub MCP token (enter to skip): " GITHUB_MCP_TOKEN </dev/tty
-    read -rp "  Trello API key (enter to skip): "   TRELLO_API_KEY </dev/tty
-    read -rp "  Trello token (enter to skip): "     TRELLO_TOKEN </dev/tty
+  if [[ -z "${GITHUB_MCP_TOKEN:-}" && -z "${TRELLO_API_KEY:-}" ]]; then
+    read -rp "Configure MCP servers? [y/N]: " ans </dev/tty
+    if [[ "${ans,,}" == "y" ]]; then
+      read -rp "  GitHub MCP token (enter to skip): " GITHUB_MCP_TOKEN </dev/tty
+      read -rp "  Trello API key (enter to skip): "   TRELLO_API_KEY </dev/tty
+      read -rp "  Trello token (enter to skip): "     TRELLO_TOKEN </dev/tty
+    fi
   fi
 fi
 
