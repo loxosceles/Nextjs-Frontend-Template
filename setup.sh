@@ -126,8 +126,8 @@ rm -rf frontend-additions
 info "Downloading devcontainer files..."
 curl -fsSL "$DEVCONTAINER_TEMPLATES_URL" | tar -xz \
   --strip-components=2 -C .devcontainer \
-  "devcontainer-templates-main/typescript/Dockerfile" \
-  "devcontainer-templates-main/typescript/devcontainer.json" \
+  "devcontainer-templates-main/nextjs-frontend/Dockerfile" \
+  "devcontainer-templates-main/nextjs-frontend/devcontainer.json" \
   "devcontainer-templates-main/common/post_create.sh"
 
 info "Downloading versioning workflows..."
