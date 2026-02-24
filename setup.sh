@@ -127,6 +127,21 @@ for d in components hooks lib shared; do
 done
 rm -rf frontend-additions
 
+# Patch testing dependencies into frontend/package.json
+node -e "
+const fs = require('fs');
+const pkg = JSON.parse(fs.readFileSync('frontend/package.json', 'utf8'));
+pkg.devDependencies = {
+  ...pkg.devDependencies,
+  '@testing-library/jest-dom': '^6',
+  '@testing-library/react': '^16',
+  '@vitejs/plugin-react': '^5',
+  'jsdom': '^26',
+  'vitest': '^3'
+};
+fs.writeFileSync('frontend/package.json', JSON.stringify(pkg, null, 2) + '\n');
+"
+
 info "Downloading devcontainer files..."
 curl -fsSL "$DEVCONTAINER_TEMPLATES_URL" | tar -xz \
   --strip-components=2 -C .devcontainer \
