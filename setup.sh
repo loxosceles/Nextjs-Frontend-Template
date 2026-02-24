@@ -4,7 +4,7 @@ set -euo pipefail
 # ─── Source URLs ─────────────────────────────────────────────────────────────
 DEVCONTAINER_TEMPLATES_URL="https://github.com/loxosceles/devcontainer-templates/archive/main.tar.gz"
 VERSIONING_TEMPLATE_URL="https://github.com/loxosceles/github-versioning-template/archive/main.tar.gz"
-TEMPLATE_REPO="https://github.com/loxosceles/nextjs-frontend-template/archive/main.tar.gz"
+TEMPLATE_REPO="https://github.com/loxosceles/nextjs-static-template/archive/main.tar.gz"
 
 # ─── Colors ──────────────────────────────────────────────────────────────────
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'

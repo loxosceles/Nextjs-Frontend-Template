@@ -1,4 +1,4 @@
-# nextjs-frontend-template
+# nextjs-static-template
 
 Project template for Next.js + AWS CDK (static export via S3/CloudFront).
 
@@ -6,7 +6,7 @@ Project template for Next.js + AWS CDK (static export via S3/CloudFront).
 
 ```bash
 mkdir my-project && cd my-project
-curl -fsSL https://raw.githubusercontent.com/loxosceles/nextjs-frontend-template/main/setup.sh | bash
+curl -fsSL https://raw.githubusercontent.com/loxosceles/nextjs-static-template/main/setup.sh | bash
 ```
 
 ## Structure
