@@ -1,21 +1,20 @@
-# __PROJECT_NAME__
+# nextjs-frontend-template
 
-Next.js frontend with AWS CDK infrastructure (CloudFront + S3).
+Project template for Next.js + AWS CDK (static export via S3/CloudFront).
 
-## Bootstrap
+## Usage
 
-From an empty directory:
-
-```sh
+```bash
+mkdir my-project && cd my-project
 curl -fsSL https://raw.githubusercontent.com/loxosceles/nextjs-frontend-template/main/setup.sh | bash
 ```
 
-The directory name becomes the project name. No cloning required.
+## Structure
 
-## Documentation
+- `setup.sh` — Bootstrap script (runs on host)
+- `scaffold/` — Project files extracted into new projects
+- `devcontainer-defaults.env.template` — Host config reference
 
-- [Architecture Overview](docs/architecture/overview.md)
-- [Local Development](docs/guides/local-development.md)
-- [Deployment](docs/guides/deployment.md)
-- [Commands Reference](docs/reference/commands.md)
-- [Environment Variables](docs/reference/environment-variables.md)
+## Host Config
+
+Copy `devcontainer-defaults.env.template` to `~/.config/devcontainer-defaults.env` and fill in values. The setup script reads this to auto-configure mounts and credentials.
