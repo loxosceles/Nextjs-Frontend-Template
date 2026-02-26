@@ -65,7 +65,7 @@
     // { "type": "bind", "source": "<ZSH_CONFIG_PATH>", "target": "/home/vscode/.config/zsh" },
 
     // tmux config — opt-in
-    // { "type": "bind", "source": "<TMUX_CONFIG_PATH>", "target": "/home/vscode/.tmux" },
+    // { "type": "bind", "source": "<TMUX_CONFIG_PATH>", "target": "/home/vscode/.config/tmux" },
 
     // ZSH history — opt-in
     // { "type": "bind", "source": "<ZSH_HISTORY_PATH>", "target": "/home/vscode/.zsh_history" },
