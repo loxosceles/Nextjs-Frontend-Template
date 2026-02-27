@@ -35,7 +35,11 @@ const [command] = process.argv.slice(2);
 
 async function main() {
   switch (command) {
-    case 'bootstrap': await bootstrapCdk(); break;
+    case 'bootstrap':
+      await setupOidc();
+      await bootstrapCdk();
+      await githubVars();
+      break;
     case 'deploy':
       if (stage === 'prod') { console.error('Production deploy must go through CI/CD pipeline'); process.exit(1); }
       await deploy();
