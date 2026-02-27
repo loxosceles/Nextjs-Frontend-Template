@@ -14,6 +14,8 @@
     "test:infra": "pnpm --filter=infrastructure run test",
     "test:frontend": "pnpm --filter=frontend run test",
     "synth": "pnpm --filter=infrastructure run synth",
+    "bootstrap:dev": "ENVIRONMENT=dev pnpm --filter=infrastructure run bootstrap",
+    "bootstrap:prod": "ENVIRONMENT=prod pnpm --filter=infrastructure run bootstrap",
     "deploy:dev": "ENVIRONMENT=dev pnpm --filter=infrastructure run deploy",
     "deploy:pipeline:dev": "ENVIRONMENT=dev pnpm --filter=infrastructure run deploy:pipeline",
     "deploy:pipeline:prod": "ENVIRONMENT=prod pnpm --filter=infrastructure run deploy:pipeline",

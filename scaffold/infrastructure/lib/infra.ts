@@ -35,6 +35,7 @@ const [command] = process.argv.slice(2);
 
 async function main() {
   switch (command) {
+    case 'bootstrap': await bootstrapCdk(); break;
     case 'deploy':
       if (stage === 'prod') { console.error('Production deploy must go through CI/CD pipeline'); process.exit(1); }
       await deploy();
@@ -51,7 +52,7 @@ async function main() {
       break;
     default:
       console.log('Usage: ts-node lib/infra.ts <command>');
-      console.log('Commands: deploy | deploy:pipeline | publish | ssm-upload | github-vars | setup-oidc | synth | destroy');
+      console.log('Commands: bootstrap | deploy | deploy:pipeline | publish | ssm-upload | github-vars | setup-oidc | synth | destroy');
       process.exit(1);
   }
 }
@@ -67,6 +68,14 @@ async function deploy() {
   await run('npx', ['cdk', 'deploy', '--all', '--require-approval', 'never']);
   await publish();
   console.log(`\n✅ Deployment complete — https://${await getStackOutput('CloudfrontDomain')}`);
+}
+
+async function bootstrapCdk() {
+  const account = bootstrap().cdkDefaultAccount;
+  const reg = region();
+  console.log(`🔧 Bootstrapping CDK for account ${account} in region ${reg}...`);
+  await run('npx', ['cdk', 'bootstrap', `aws://${account}/${reg}`]);
+  console.log('✅ Bootstrap complete');
 }
 
 async function publish() {
