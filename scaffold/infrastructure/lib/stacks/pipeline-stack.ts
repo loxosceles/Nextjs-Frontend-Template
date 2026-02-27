@@ -12,14 +12,13 @@ interface PipelineStackProps extends cdk.StackProps {
   githubOwner: string;
   githubRepo: string;
   githubBranch: string;
-  githubTokenSecretName: string;
 }
 
 export class PipelineStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: PipelineStackProps) {
     super(scope, id, props);
 
-    const { projectName, stage, githubOwner, githubRepo, githubBranch, githubTokenSecretName } = props;
+    const { projectName, stage, githubOwner, githubRepo } = props;
 
     // GitHub OIDC provider (one per account — must already exist)
     const oidcProvider = iam.OpenIdConnectProvider.fromOpenIdConnectProviderArn(
@@ -27,7 +26,14 @@ export class PipelineStack extends cdk.Stack {
       `arn:aws:iam::${this.account}:oidc-provider/token.actions.githubusercontent.com`
     );
 
-    // IAM role for GitHub Actions to trigger this pipeline
+    // Artifacts bucket
+    const artifactsBucket = new s3.Bucket(this, 'Artifacts', {
+      bucketName: `${projectName}-pipeline-artifacts-${stage}`,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true
+    });
+
+    // IAM role for GitHub Actions to upload source and trigger pipeline
     const ghRole = new iam.Role(this, 'GitHubActionsRole', {
       roleName: `${projectName}-github-actions-${stage}`,
       assumedBy: new iam.WebIdentityPrincipal(oidcProvider.openIdConnectProviderArn, {
@@ -42,12 +48,10 @@ export class PipelineStack extends cdk.Stack {
       resources: [`arn:aws:codepipeline:${this.region}:${this.account}:${projectName}-pipeline-${stage}`]
     }));
 
-    // Artifacts bucket
-    const artifactsBucket = new s3.Bucket(this, 'Artifacts', {
-      bucketName: `${projectName}-pipeline-artifacts-${stage}`,
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-      autoDeleteObjects: true
-    });
+    ghRole.addToPolicy(new iam.PolicyStatement({
+      actions: ['s3:PutObject'],
+      resources: [`${artifactsBucket.bucketArn}/source/*`]
+    }));
 
     // CodeBuild role
     const buildRole = new iam.Role(this, 'CodeBuildRole', {
@@ -71,7 +75,10 @@ export class PipelineStack extends cdk.Stack {
     const buildProject = new codebuild.Project(this, 'Build', {
       projectName: `${projectName}-build-${stage}`,
       role: buildRole,
-      source: codebuild.Source.gitHub({ owner: githubOwner, repo: githubRepo, webhook: false }),
+      source: codebuild.Source.s3({
+        bucket: artifactsBucket,
+        path: 'source/source.zip'
+      }),
       environment: {
         buildImage: codebuild.LinuxBuildImage.STANDARD_7_0,
         computeType: codebuild.ComputeType.SMALL
@@ -95,14 +102,12 @@ export class PipelineStack extends cdk.Stack {
       stages: [
         {
           stageName: 'Source',
-          actions: [new codepipeline_actions.GitHubSourceAction({
-            actionName: 'GitHub',
-            owner: githubOwner,
-            repo: githubRepo,
-            branch: githubBranch,
-            oauthToken: cdk.SecretValue.secretsManager(githubTokenSecretName),
+          actions: [new codepipeline_actions.S3SourceAction({
+            actionName: 'S3Source',
+            bucket: artifactsBucket,
+            bucketKey: 'source/source.zip',
             output: sourceOutput,
-            trigger: codepipeline_actions.GitHubTrigger.NONE
+            trigger: codepipeline_actions.S3Trigger.NONE
           })]
         },
         {
@@ -118,5 +123,6 @@ export class PipelineStack extends cdk.Stack {
     });
 
     new cdk.CfnOutput(this, 'GitHubActionsRoleArn', { value: ghRole.roleArn });
+    new cdk.CfnOutput(this, 'SourceBucketName', { value: artifactsBucket.bucketName });
   }
 }

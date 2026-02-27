@@ -18,6 +18,3 @@ export type Stage = (typeof SUPPORTED_STAGES)[number];
 // ─── Paths ───────────────────────────────────────────────────────────────────
 export const PROJECT_ROOT = path.resolve(__dirname, '../..');
 export const FRONTEND_OUT_DIR = path.join(PROJECT_ROOT, 'frontend/out');
-
-// ─── Secrets ─────────────────────────────────────────────────────────────────
-export const GITHUB_TOKEN_SECRET_NAME = 'GH_AUTOMATION_TOKEN';

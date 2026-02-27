@@ -3,7 +3,7 @@ import * as cdk from 'aws-cdk-lib';
 import { WebStack } from '../lib/stacks/web-stack';
 import { PipelineStack } from '../lib/stacks/pipeline-stack';
 import { EnvironmentManager } from '../lib/core/environment-manager';
-import { PROJECT_NAME, GITHUB_TOKEN_SECRET_NAME } from '../configs/project.config';
+import { PROJECT_NAME } from '../configs/project.config';
 
 const stage = EnvironmentManager.getStage();
 
@@ -23,7 +23,6 @@ if (bootstrap.githubOwner && bootstrap.githubRepo) {
     stage,
     githubOwner: bootstrap.githubOwner,
     githubRepo: bootstrap.githubRepo,
-    githubBranch: stage === 'prod' ? 'main' : 'dev',
-    githubTokenSecretName: GITHUB_TOKEN_SECRET_NAME
+    githubBranch: stage === 'prod' ? 'main' : 'dev'
   });
 }

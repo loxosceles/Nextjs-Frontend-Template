@@ -37,5 +37,10 @@ jobs:
           role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/${{ vars.PROJECT_NAME }}-github-actions-${{ steps.config.outputs.stage }}
           aws-region: ${{ vars.AWS_REGION_DEFAULT }}
 
+      - name: Upload source to S3
+        run: |
+          git archive --format=zip HEAD -o source.zip
+          aws s3 cp source.zip s3://${{ vars.PROJECT_NAME }}-pipeline-artifacts-${{ steps.config.outputs.stage }}/source/source.zip
+
       - name: Trigger pipeline
         run: aws codepipeline start-pipeline-execution --name ${{ vars.PROJECT_NAME }}-pipeline-${{ steps.config.outputs.stage }}
