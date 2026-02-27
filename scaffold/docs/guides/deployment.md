@@ -2,12 +2,9 @@
 
 ## Prerequisites
 
-- AWS CDK bootstrapped in target account/region: `cdk bootstrap aws://<account>/<region>`
+- AWS CDK bootstrapped in target account/region: `pnpm bootstrap:dev` or `pnpm bootstrap:prod`
 - Bootstrap config in `infrastructure/.env.{stage}` (local) or CI environment variables
-- GitHub personal access token (PAT) with `repo` and `workflow` scopes stored in AWS Secrets Manager as `GH_AUTOMATION_TOKEN`. This is a shared secret used by all projects for CodePipeline source access:
-  ```sh
-  aws secretsmanager create-secret --name GH_AUTOMATION_TOKEN --secret-string <your-github-pat>
-  ```
+- GitHub OIDC provider created: `pnpm setup-oidc`
 
 ## Bootstrap Config
 
